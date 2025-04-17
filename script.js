@@ -1,95 +1,199 @@
 // Main functionality
 document.addEventListener('DOMContentLoaded', function() {
-    const settingsIcon = document.querySelector('.settings-icon');
-    const closeButton = document.querySelector('.close-button');
-    const settingsModal = document.querySelector('.settings-modal');
-    const modalOverlay = document.querySelector('.modal-overlay');
+    // DOM elements
     const frogIcon = document.querySelector('.frog-icon');
-    const appContainer = document.querySelector('.app-container');
     const topSection = document.querySelector('.top-section');
     const middleSection = document.querySelector('.middle-section');
     const bottomSection = document.querySelector('.bottom-section');
-    let interfaceVisible = true;
-    
-    // Settings modal toggle
+    const animationContainer = document.querySelector('.animation-container');
+    const settingsIcon = document.querySelector('.settings-icon');
+    const settingsModal = document.querySelector('.settings-modal');
+    const closeButton = document.querySelector('.settings-modal .close-button');
+    const modalOverlay = document.querySelector('.modal-overlay');
+    const tabs = document.querySelectorAll('.tab');
+    const addGoalIcon = document.querySelector('.add-goal-icon');
+    const goalModal = document.querySelector('.goal-modal');
+    const goalCloseButton = document.querySelector('.goal-modal .close-button');
+    const createGoalButton = document.querySelector('.create-goal-button');
+    const goalNameInput = document.querySelector('.goal-input');
+    const colorOptions = document.querySelectorAll('.color-option');
+    const goalPrevArrow = document.querySelector('.goal-arrow.prev');
+    const goalNextArrow = document.querySelector('.goal-arrow.next');
+    const goalName = document.querySelector('.goal-name');
+    const appContainer = document.querySelector('.app-container');
+
+    // Goal management
+    let goals = [
+        { name: 'FINISH UI', color: '#aff3af' },
+        { name: 'LEARN JS', color: '#ffce9d' },
+        { name: 'READ BOOK', color: '#a7c5eb' }
+    ];
+    let currentGoalIndex = 0;
+    let selectedColor = '#aff3af';
+
+    // Initialize color selection
+    colorOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove selected class from all options
+            colorOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            this.classList.add('selected');
+            
+            // Update selected color
+            selectedColor = this.getAttribute('data-color');
+        });
+    });
+
+    // Select the first color option by default
+    colorOptions[0].classList.add('selected');
+
+    // Toggle interface visibility when frog icon is clicked
+    frogIcon.addEventListener('click', function() {
+        const isVisible = !middleSection.classList.contains('hidden');
+        
+        if (isVisible) {
+            // Hide all interface elements except minimal top section
+            topSection.classList.add('minimal');
+            middleSection.classList.add('hidden');
+            bottomSection.classList.add('hidden');
+            
+            // Add a class to completely hide the timer and calendar
+            appContainer.classList.add('background-only');
+            
+            // Show animation
+            animationContainer.style.display = 'block';
+            
+            // Show the clean background
+            document.body.classList.add('hide-overlay');
+        } else {
+            // Show all interface elements
+            topSection.classList.remove('minimal');
+            middleSection.classList.remove('hidden');
+            bottomSection.classList.remove('hidden');
+            
+            // Remove the class that hides the timer and calendar
+            appContainer.classList.remove('background-only');
+            
+            // Hide animation
+            animationContainer.style.display = 'none';
+            
+            // Show the overlay
+            document.body.classList.remove('hide-overlay');
+        }
+    });
+
+    // Open settings modal
     settingsIcon.addEventListener('click', function() {
         settingsModal.style.display = 'block';
         modalOverlay.style.display = 'block';
     });
-    
+
+    // Close settings modal
     closeButton.addEventListener('click', function() {
         settingsModal.style.display = 'none';
         modalOverlay.style.display = 'none';
     });
-    
+
+    // Open goal creation modal
+    addGoalIcon.addEventListener('click', function() {
+        goalModal.style.display = 'block';
+        modalOverlay.style.display = 'block';
+        goalNameInput.focus();
+    });
+
+    // Close goal modal
+    goalCloseButton.addEventListener('click', function() {
+        goalModal.style.display = 'none';
+        modalOverlay.style.display = 'none';
+        resetGoalForm();
+    });
+
+    // Close modals when clicking overlay
     modalOverlay.addEventListener('click', function() {
         settingsModal.style.display = 'none';
+        goalModal.style.display = 'none';
         modalOverlay.style.display = 'none';
+        resetGoalForm();
     });
-    
-    // Tab switching
-    const tabs = document.querySelectorAll('.tab');
+
+    // Tab switching in settings
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
+            // Remove active class from all tabs
             tabs.forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked tab
             this.classList.add('active');
-            // In a real app, you would show/hide the corresponding content here
+            
+            // Update content based on selected tab
+            // This would be implemented based on the content for each tab
         });
     });
-    
-    // Toggle interface visibility when clicking the frog icon
-    frogIcon.addEventListener('click', function() {
-        interfaceVisible = !interfaceVisible;
-        
-        if (interfaceVisible) {
-            // Show interface with transparent backgrounds
-            document.body.classList.remove('hide-overlay');
+
+    // Create new goal
+    createGoalButton.addEventListener('click', function() {
+        const name = goalNameInput.value.trim();
+        if (name) {
+            // Add new goal to the array
+            goals.push({
+                name: name.toUpperCase(),
+                color: selectedColor
+            });
             
-            middleSection.style.display = 'flex';
-            middleSection.style.opacity = '1';
-            middleSection.style.background = 'transparent';
-            middleSection.style.backdropFilter = 'blur(8px)';
-            middleSection.style.webkitBackdropFilter = 'blur(8px)';
+            // Switch to the new goal
+            currentGoalIndex = goals.length - 1;
+            updateGoalDisplay();
             
-            bottomSection.style.display = 'block';
-            bottomSection.style.opacity = '1';
-            bottomSection.style.background = 'transparent';
-            bottomSection.style.backdropFilter = 'blur(8px)';
-            bottomSection.style.webkitBackdropFilter = 'blur(8px)';
-            
-            topSection.style.background = 'transparent';
-            topSection.style.backdropFilter = 'blur(8px)';
-            topSection.style.webkitBackdropFilter = 'blur(8px)';
-            
-            // Add slight blur to background
-            document.querySelector('.background').style.filter = 'blur(3px)';
-            
-            // Hide animation when interface is visible
-            document.querySelector('.animation-container').style.display = 'none';
-        } else {
-            // Hide interface completely to reveal background for animations
-            document.body.classList.add('hide-overlay');
-            
-            middleSection.style.display = 'none';
-            middleSection.style.opacity = '0';
-            
-            bottomSection.style.display = 'none';
-            bottomSection.style.opacity = '0';
-            
-            topSection.style.backdropFilter = 'none';
-            topSection.style.webkitBackdropFilter = 'none';
-            topSection.style.background = 'transparent';
-            
-            // Remove blur from background
-            document.querySelector('.background').style.filter = 'none';
-            
-            // Show animation when interface is hidden
-            document.querySelector('.animation-container').style.display = 'block';
+            // Close the modal
+            goalModal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+            resetGoalForm();
         }
     });
-    
-    // Background zoomed element has been removed
-    
+
+    // Navigate to previous goal
+    goalPrevArrow.addEventListener('click', function() {
+        if (goals.length > 1) {
+            currentGoalIndex = (currentGoalIndex - 1 + goals.length) % goals.length;
+            updateGoalDisplay();
+        }
+    });
+
+    // Navigate to next goal
+    goalNextArrow.addEventListener('click', function() {
+        if (goals.length > 1) {
+            currentGoalIndex = (currentGoalIndex + 1) % goals.length;
+            updateGoalDisplay();
+        }
+    });
+
+    // Update the goal display
+    function updateGoalDisplay() {
+        const currentGoal = goals[currentGoalIndex];
+        goalName.textContent = currentGoal.name;
+        goalName.style.color = currentGoal.color;
+        
+        // Update navigation arrows visibility
+        if (goals.length <= 1) {
+            goalPrevArrow.style.visibility = 'hidden';
+            goalNextArrow.style.visibility = 'hidden';
+        } else {
+            goalPrevArrow.style.visibility = 'visible';
+            goalNextArrow.style.visibility = 'visible';
+        }
+    }
+
+    // Reset the goal creation form
+    function resetGoalForm() {
+        goalNameInput.value = '';
+        colorOptions.forEach(opt => opt.classList.remove('selected'));
+        colorOptions[0].classList.add('selected');
+        selectedColor = colorOptions[0].getAttribute('data-color');
+    }
+
+    // Initialize goal display
+    updateGoalDisplay();
     // Initialize animation container (hidden by default)
     document.querySelector('.animation-container').style.display = 'none';
 

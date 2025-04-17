@@ -52,6 +52,11 @@ body {
     transform: translateX(-50%);
 }
 
+/* Remove blur from background */
+body.hide-overlay .background {
+    filter: none;
+}
+
 /* Background zoomed removed */
 
 /* Animation container for GIF */
@@ -87,7 +92,7 @@ body {
 .app-container {
     position: absolute;
     top: 0;
-    left: 0;
+    left: 50%;
     width: 350px;
     height: 600px;
     display: flex;
@@ -97,9 +102,41 @@ body {
     padding: 20px;
     overflow: hidden;
     transition: all 0.5s ease;
-    margin: 0 auto;
-    left: 50%;
     transform: translateX(-50%);
+    z-index: 10;
+    position: relative;
+}
+
+.app-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    transition: backdrop-filter 0.5s ease;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* No blur effect when the overlay is hidden */
+body.hide-overlay .app-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    z-index: -1;
+}
+
+/* Hide all UI elements except the minimal top section when in background-only mode */
+.app-container.background-only .middle-section,
+.app-container.background-only .bottom-section {
+    display: none !important;
 }
 
 /* Top section with settings icon */
@@ -194,11 +231,23 @@ body {
     width: 24px;
     height: 24px;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+.add-goal-icon {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 8px;
 }
 
 .settings-icon:hover {
     transform: rotate(45deg);
+}
+
+.add-goal-icon:hover {
+    transform: scale(1.1);
 }
 
 /* Middle section with timer */
@@ -227,12 +276,30 @@ body {
     font-weight: 400;
 }
 
-.goal-text span {
-    display: block;
-    font-size: 18px;
-    font-weight: 300;
+.goal-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-top: 5px;
-    color: var(--accent-color);
+    gap: 8px;
+}
+
+.goal-name {
+    font-size: 15px;
+    font-weight: 300;
+}
+
+.goal-arrow {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.goal-arrow:hover {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 .timer-container {
@@ -611,6 +678,113 @@ body {
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
-    z-index: 50;
+    z-index: 90;
     display: none;
+}
+
+/* Goal creation modal */
+.goal-modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 15px;
+    padding: 10px;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    display: none;
+    max-width: 200px;
+}
+
+.goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.goal-title {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.goal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.goal-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.goal-label {
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.goal-input-container {
+    width: 100%;
+}
+
+.goal-input {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 11px;
+    outline: none;
+}
+
+.color-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.color-option {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option.selected {
+    border: 2px solid white;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.create-goal-button {
+    margin-top: 5px;
+    padding: 6px 15px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text-color);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: center;
+}
+
+.create-goal-button:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
