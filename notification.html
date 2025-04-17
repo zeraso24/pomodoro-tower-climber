@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Notification</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --mint-green: #c8e6c9;
+            --blush-pink: #f8bbd0;
+            --pale-yellow: #fff9c4;
+            --muted-turquoise: #80cbc4;
+            --bg-green: #a5d6a7;
+            --text-color: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-dark-bg: rgba(70, 70, 70, 0.85);
+            --progress-completed: #aff3af;
+            --progress-missed: #ffce9d;
+            --font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.01);
+            color: var(--text-color);
+        }
+
+        .notification-container {
+            width: 320px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--muted-turquoise) 100%);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .notification-title {
+            flex: 1;
+        }
+
+        .notification-title h1 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .notification-title p {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .notification-content {
+            margin-bottom: 20px;
+        }
+
+        .notification-content p {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .notification-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .notification-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .notification-button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 15px;
+            font-family: var(--font-family);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--muted-turquoise) 100%);
+            color: rgba(0, 0, 0, 0.8);
+            margin-right: 10px;
+        }
+
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .button-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .frog-icon {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification-container">
+        <div class="notification-header">
+            <div class="notification-icon">
+                <svg class="frog-icon" viewBox="0 0 30 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7.5 6C7.5 6 4.5 9 4.5 12C4.5 15 7.5 18 7.5 18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M22.5 6C22.5 6 25.5 9 25.5 12C25.5 15 22.5 18 22.5 18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M15 3C19.9706 3 24 7.02944 24 12C24 16.9706 19.9706 21 15 21C10.0294 21 6 16.9706 6 12C6 7.02944 10.0294 3 15 3Z" fill="#aff3af" stroke="white" stroke-width="2"/>
+                    <circle cx="11" cy="10" r="2" fill="white"/>
+                    <circle cx="19" cy="10" r="2" fill="white"/>
+                    <path d="M12 15C12 15 13.5 16 15 16C16.5 16 18 15 18 15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="notification-title">
+                <h1>Pomodoro Complete!</h1>
+                <p>Just now</p>
+            </div>
+        </div>
+
+        <div class="notification-content">
+            <p>Great job! You've completed your focus session. Take a short break before continuing.</p>
+        </div>
+
+        <div class="notification-stats">
+            <div class="stat-item">
+                <div class="stat-value">25:00</div>
+                <div class="stat-label">Session</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">4</div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">12</div>
+                <div class="stat-label">Week</div>
+            </div>
+        </div>
+
+        <div class="notification-buttons">
+            <button class="notification-button button-primary">Start Break</button>
+            <button class="notification-button button-secondary">Skip</button>
+        </div>
+    </div>
+
+    <script>
+        // Auto-close notification after 10 seconds
+        setTimeout(() => {
+            document.querySelector('.notification-container').style.animation = 'slideOut 0.5s ease forwards';
+        }, 10000);
+
+        // Add event listeners to buttons
+        document.querySelector('.button-primary').addEventListener('click', function() {
+            window.close();
+        });
+
+        document.querySelector('.button-secondary').addEventListener('click', function() {
+            window.close();
+        });
+    </script>
+</body>
+</html>
