@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Tower Climber</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Global styles and variables */
+        :root {
+            --mint-green: #c8e6c9;
+            --blush-pink: #f8bbd0;
+            --pale-yellow: #fff9c4;
+            --muted-turquoise: #80cbc4;
+            --bg-green: #a5d6a7;
+            --text-color: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-dark-bg: rgba(70, 70, 70, 0.85);
+            --progress-completed: #aff3af;
+            --progress-missed: #ffce9d;
+            --font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            color: var(--text-color);
+        }
+
+        /* Background - Now using background.png with gradient overlay */
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background.png');
+            background-size: cover;
+            background-position: center;
+            z-index: -10;
+        }
+        
+        /* Gradient overlay for better visibility */
+        .background::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(165, 214, 167, 0.6) 0%, rgba(128, 203, 196, 0.6) 100%);
+            z-index: -5;
+        }
+
+        /* Main container */
+        .app-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            overflow: hidden;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.5s ease;
+        }
+
+        /* Top section with settings icon */
+        .top-section {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 20px;
+            margin-bottom: 10px;
+            transition: all 0.5s ease;
+        }
+
+        .frog-icon {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .frog-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .frog-eyes {
+            display: flex;
+            gap: 3px;
+        }
+
+        .frog-eye {
+            width: 10px;
+            height: 10px;
+            border: 2px solid white;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .settings-icon {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .settings-icon:hover {
+            transform: rotate(45deg);
+        }
+
+        /* Middle section with timer */
+        .middle-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            z-index: 5;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 20px;
+            padding: 20px 0;
+            margin: 10px 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .goal-text {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        .goal-text span {
+            display: block;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .timer-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .timer-rings {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .timer-display {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .timer-text {
+            font-size: 42px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .character-preview {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /* REPLACE THIS with your character image */
+            background: linear-gradient(135deg, rgba(173, 220, 145, 0.5) 0%, rgba(209, 242, 235, 0.5) 100%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+        
+        .character-preview::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: rgba(173, 220, 145, 0.7);
+            border-radius: 5px;
+            transform: rotate(45deg);
+            left: 30px;
+            top: 60px;
+        }
+        
+        .character-preview::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(128, 203, 196, 0.7);
+            border-radius: 5px;
+            transform: rotate(15deg);
+            right: 30px;
+            bottom: 60px;
+        }
+
+        .pause-button {
+            margin-top: 30px;
+            padding: 10px 40px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: var(--text-color);
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px var(--shadow-color);
+        }
+
+        .pause-button:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px var(--shadow-color);
+        }
+
+        /* Bottom section with progress bars */
+        .bottom-section {
+            width: 100%;
+            padding: 15px;
+            z-index: 5;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 20px;
+            transition: opacity 0.5s ease;
+        }
+
+        .date-label {
+            font-size: 12px;
+            margin-bottom: 8px;
+            opacity: 0.9;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            text-align: left;
+            margin-bottom: 12px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            gap: 0px;
+            margin-top: 5px;
+            position: relative;
+            flex-direction: column;
+        }
+        
+        .day-numbers {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        
+        .day-number {
+            font-size: 6px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .bars-container {
+            display: flex;
+            width: 100%;
+            height: 100px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .progress-bar:hover .progress-tooltip {
+            display: block;
+        }
+        
+        .progress-bar:hover .progress-indicator {
+            transform: scale(1.2);
+        }
+        
+        .progress-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+            z-index: 10;
+            margin-bottom: 5px;
+            pointer-events: none;
+        }
+        
+        .progress-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 4px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+        }
+
+        .progress-indicator {
+            display: flex;
+            flex-direction: column-reverse; /* Use column-reverse to build from bottom up */
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            height: 100px;
+            gap: 2px;
+        }
+        
+        .cube {
+            width: 6px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .cube.completed {
+            background-color: #aff3af;
+        }
+
+        /* Settings modal */
+        .settings-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            background: var(--glass-dark-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 15px;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            display: none;
+            max-width: 300px;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .settings-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close-button {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .close-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            letter-spacing: 1px;
+            font-size: 12px;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .settings-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            padding-left: 5px;
+            padding-right: 5px;
+            border-radius: 10px;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-label {
+            font-size: 14px;
+        }
+
+        .settings-value {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .settings-value span {
+            font-size: 14px;
+            min-width: 25px;
+            text-align: right;
+        }
+
+        .chevron {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        /* Overlay when modal is open */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            z-index: 50;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background image -->
+    <div class="background">
+        <!-- Background is set via CSS background-image -->
+    </div>
+
+    <div class="app-container">
+        <!-- Top section with icons -->
+        <div class="top-section">
+            <div class="frog-icon">
+                <svg width="30" height="24" viewBox="0 0 30 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7.5 6C7.5 6 4.5 9 4.5 12C4.5 15 7.5 18 7.5 18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M22.5 6C22.5 6 25.5 9 25.5 12C25.5 15 22.5 18 22.5 18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M15 3C19.9706 3 24 7.02944 24 12C24 16.9706 19.9706 21 15 21C10.0294 21 6 16.9706 6 12C6 7.02944 10.0294 3 15 3Z" fill="#aff3af" stroke="white" stroke-width="2"/>
+                    <circle cx="11" cy="10" r="2" fill="white"/>
+                    <circle cx="19" cy="10" r="2" fill="white"/>
+                    <path d="M12 15C12 15 13.5 16 15 16C16.5 16 18 15 18 15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <svg class="settings-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M19.4 15C19.2669 15.3016 19.2272 15.6362 19.286 15.9606C19.3448 16.285 19.4995 16.5843 19.73 16.82L19.79 16.88C19.976 17.0657 20.1235 17.2863 20.2241 17.5291C20.3248 17.7719 20.3766 18.0322 20.3766 18.295C20.3766 18.5578 20.3248 18.8181 20.2241 19.0609C20.1235 19.3037 19.976 19.5243 19.79 19.71C19.6043 19.896 19.3837 20.0435 19.1409 20.1441C18.8981 20.2448 18.6378 20.2966 18.375 20.2966C18.1122 20.2966 17.8519 20.2448 17.6091 20.1441C17.3663 20.0435 17.1457 19.896 16.96 19.71L16.9 19.65C16.6643 19.4195 16.365 19.2648 16.0406 19.206C15.7162 19.1472 15.3816 19.1869 15.08 19.32C14.7842 19.4468 14.532 19.6572 14.3543 19.9255C14.1766 20.1938 14.0813 20.5082 14.08 20.83V21C14.08 21.5304 13.8693 22.0391 13.4942 22.4142C13.1191 22.7893 12.6104 23 12.08 23C11.5496 23 11.0409 22.7893 10.6658 22.4142C10.2907 22.0391 10.08 21.5304 10.08 21V20.91C10.0723 20.579 9.96512 20.258 9.77251 19.9887C9.5799 19.7194 9.31074 19.5143 9 19.4C8.69838 19.2669 8.36381 19.2272 8.03941 19.286C7.71502 19.3448 7.41568 19.4995 7.18 19.73L7.12 19.79C6.93425 19.976 6.71368 20.1235 6.47088 20.2241C6.22808 20.3248 5.96783 20.3766 5.705 20.3766C5.44217 20.3766 5.18192 20.3248 4.93912 20.2241C4.69632 20.1235 4.47575 19.976 4.29 19.79C4.10405 19.6043 3.95653 19.3837 3.85588 19.1409C3.75523 18.8981 3.70343 18.6378 3.70343 18.375C3.70343 18.1122 3.75523 17.8519 3.85588 17.6091C3.95653 17.3663 4.10405 17.1457 4.29 16.96L4.35 16.9C4.58054 16.6643 4.73519 16.365 4.794 16.0406C4.85282 15.7162 4.81312 15.3816 4.68 15.08C4.55324 14.7842 4.34276 14.532 4.07447 14.3543C3.80618 14.1766 3.49179 14.0813 3.17 14.08H3C2.46957 14.08 1.96086 13.8693 1.58579 13.4942C1.21071 13.1191 1 12.6104 1 12.08C1 11.5496 1.21071 11.0409 1.58579 10.6658C1.96086 10.2907 2.46957 10.08 3 10.08H3.09C3.42099 10.0723 3.742 9.96512 4.0113 9.77251C4.28059 9.5799 4.48572 9.31074 4.6 9C4.73312 8.69838 4.77282 8.36381 4.714 8.03941C4.65519 7.71502 4.50054 7.41568 4.27 7.18L4.21 7.12C4.02405 6.93425 3.87653 6.71368 3.77588 6.47088C3.67523 6.22808 3.62343 5.96783 3.62343 5.705C3.62343 5.44217 3.67523 5.18192 3.77588 4.93912C3.87653 4.69632 4.02405 4.47575 4.21 4.29C4.39575 4.10405 4.61632 3.95653 4.85912 3.85588C5.10192 3.75523 5.36217 3.70343 5.625 3.70343C5.88783 3.70343 6.14808 3.75523 6.39088 3.85588C6.63368 3.95653 6.85425 4.10405 7.04 4.29L7.1 4.35C7.33568 4.58054 7.63502 4.73519 7.95941 4.794C8.28381 4.85282 8.61838 4.81312 8.92 4.68H9C9.29577 4.55324 9.54802 4.34276 9.72569 4.07447C9.90337 3.80618 9.99872 3.49179 10 3.17V3C10 2.46957 10.2107 1.96086 10.5858 1.58579C10.9609 1.21071 11.4696 1 12 1C12.5304 1 13.0391 1.21071 13.4142 1.58579C13.7893 1.96086 14 2.46957 14 3V3.09C14.0013 3.41179 14.0966 3.72618 14.2743 3.99447C14.452 4.26276 14.7042 4.47324 15 4.6C15.3016 4.73312 15.6362 4.77282 15.9606 4.714C16.285 4.65519 16.5843 4.50054 16.82 4.27L16.88 4.21C17.0657 4.02405 17.2863 3.87653 17.5291 3.77588C17.7719 3.67523 18.0322 3.62343 18.295 3.62343C18.5578 3.62343 18.8181 3.67523 19.0609 3.77588C19.3037 3.87653 19.5243 4.02405 19.71 4.21C19.896 4.39575 20.0435 4.61632 20.1441 4.85912C20.2448 5.10192 20.2966 5.36217 20.2966 5.625C20.2966 5.88783 20.2448 6.14808 20.1441 6.39088C20.0435 6.63368 19.896 6.85425 19.71 7.04L19.65 7.1C19.4195 7.33568 19.2648 7.63502 19.206 7.95941C19.1472 8.28381 19.1869 8.61838 19.32 8.92V9C19.4468 9.29577 19.6572 9.54802 19.9255 9.72569C20.1938 9.90337 20.5082 9.99872 20.83 10H21C21.5304 10 22.0391 10.2107 22.4142 10.5858C22.7893 10.9609 23 11.4696 23 12C23 12.5304 22.7893 13.0391 22.4142 13.4142C22.0391 13.7893 21.5304 14 21 14H20.91C20.5882 14.0013 20.2738 14.0966 20.0055 14.2743C19.7372 14.452 19.5268 14.7042 19.4 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <!-- Middle section with timer -->
+        <div class="middle-section">
+            <div class="goal-text">
+                Current goal
+                <span>FINISH UI</span>
+            </div>
+
+            <div class="timer-container">
+                <!-- Timer rings SVG -->
+                <svg class="timer-rings" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Outer ring (weekly progress) -->
+                    <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="5" />
+                    <circle cx="100" cy="100" r="95" fill="none" stroke="#aff3af" stroke-width="5" stroke-dasharray="596.9" stroke-dashoffset="447.675" transform="rotate(-90 100 100)" /> <!-- 75% complete -->
+                    
+                    <!-- Inner ring (current session) -->
+                    <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="5" />
+                    <circle cx="100" cy="100" r="82" fill="none" stroke="#ffce9d" stroke-width="5" stroke-dasharray="515.22" stroke-dashoffset="128.8" transform="rotate(-90 100 100)" /> <!-- 75% complete -->
+                </svg>
+
+                <div class="timer-display">
+                    <div class="timer-text">05:45</div>
+                    <div class="character-preview">
+                        <!-- REPLACE THIS with your character image -->
+                        <!-- You can use: <img src="character.png" alt="Character" class="character-preview"> -->
+                    </div>
+                </div>
+            </div>
+
+            <button class="pause-button">PAUSE</button>
+        </div>
+
+        <!-- Bottom section with progress bars -->
+        <div class="bottom-section">
+            <div class="date-label">Month</div>
+            <div class="progress-container">
+                <!-- Generate 30 progress bars for the month -->
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const progressContainer = document.querySelector('.progress-container');
+                        
+                        // Get current month and year
+                        const now = new Date();
+                        const currentMonth = now.getMonth(); // 0-11
+                        const currentYear = now.getFullYear();
+                        const currentDay = now.getDate();
+                        
+                        // Get the number of days in the current month
+                        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                        
+                        // Month names
+                        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                        
+                        // Update month label
+                        document.querySelector('.date-label').textContent = monthNames[currentMonth] + ' ' + currentYear;
+                        
+                        // Clear any existing content
+                        progressContainer.innerHTML = '';
+                        
+                        // Create day numbers container
+                        const dayNumbersContainer = document.createElement('div');
+                        dayNumbersContainer.className = 'day-numbers';
+                        
+                        // Create bars container
+                        const barsContainer = document.createElement('div');
+                        barsContainer.className = 'bars-container';
+                        
+                        // Add day numbers (only show some for spacing)
+                        // First day
+                        const firstDayNumber = document.createElement('div');
+                        firstDayNumber.className = 'day-number';
+                        firstDayNumber.textContent = '1';
+                        firstDayNumber.style.marginLeft = '2px';
+                        dayNumbersContainer.appendChild(firstDayNumber);
+                        
+                        // Middle day
+                        const middleDayNumber = document.createElement('div');
+                        middleDayNumber.className = 'day-number';
+                        middleDayNumber.textContent = Math.ceil(daysInMonth / 2);
+                        middleDayNumber.style.position = 'absolute';
+                        middleDayNumber.style.left = '50%';
+                        middleDayNumber.style.transform = 'translateX(-50%)';
+                        dayNumbersContainer.appendChild(middleDayNumber);
+                        
+                        // Last day
+                        const lastDayNumber = document.createElement('div');
+                        lastDayNumber.className = 'day-number';
+                        lastDayNumber.textContent = daysInMonth;
+                        lastDayNumber.style.marginRight = '2px';
+                        dayNumbersContainer.appendChild(lastDayNumber);
+                        
+                        // Generate progress bars for each day
+                        for (let i = 1; i <= daysInMonth; i++) {
+                            const bar = document.createElement('div');
+                            bar.className = 'progress-bar';
+                            
+                            const indicator = document.createElement('div');
+                            indicator.className = 'progress-indicator';
+                            
+                            // For each day, create up to 16 cubes (max Pomodoro sessions per day)
+                            // For demo purposes, we'll randomly generate between 0-16 completed sessions for past days
+                            const maxPomodoros = 16;
+                            let completedPomodoros = 0;
+                            
+                            // Days up to current day have some completed Pomodoros
+                            if (i <= 17) { // Using 17 as example of "today" for the demo
+                                // Random number of completed Pomodoros for past days
+                                completedPomodoros = Math.floor(Math.random() * (maxPomodoros + 1));
+                            }
+                            
+                            // Create all 16 potential Pomodoro cubes in normal order
+                            for (let j = 0; j < maxPomodoros; j++) {
+                                const cube = document.createElement('div');
+                                cube.className = 'cube';
+                                
+                                // Mark completed cubes (from bottom up)
+                                // With flex-direction: column-reverse, the first cubes added will be at the bottom
+                                if (j < completedPomodoros) {
+                                    cube.classList.add('completed');
+                                }
+                                
+                                indicator.appendChild(cube);
+                            }
+                            
+                            // Create tooltip with day information
+                            const tooltip = document.createElement('div');
+                            tooltip.className = 'progress-tooltip';
+                            
+                            // Create date object for this day
+                            const dayDate = new Date(currentYear, currentMonth, i);
+                            
+                            // Format day as "Mon 21"
+                            const dayOfWeek = dayDate.toLocaleDateString('en-US', { weekday: 'short' });
+                            const dayOfMonth = dayDate.getDate();
+                            const formattedDate = `${dayOfWeek} ${dayOfMonth}`;
+                            
+                            // Add completed/total info
+                            tooltip.textContent = `${formattedDate}: ${completedPomodoros}/${maxPomodoros} sessions`;
+                            
+                            bar.appendChild(tooltip);
+                            
+                            bar.appendChild(indicator);
+                            barsContainer.appendChild(bar);
+                        }
+                        
+                        // Add both containers to the progress container
+                        progressContainer.appendChild(dayNumbersContainer);
+                        progressContainer.appendChild(barsContainer);
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings modal -->
+    <div class="settings-modal">
+        <div class="settings-header">
+            <div class="settings-title">Settings</div>
+            <div class="close-button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active">DURATION</div>
+            <div class="tab">NOTIFICATIONS</div>
+        </div>
+
+        <div class="settings-content">
+            <div class="settings-item">
+                <div class="settings-label">Focus Session</div>
+                <div class="settings-value">
+                    <span>25</span> min
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 18L15 12L9 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">Short break</div>
+                <div class="settings-value">
+                    <span>05</span> min
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 18L15 12L9 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">Long break</div>
+                <div class="settings-value">
+                    <span>15</span> min
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 18L15 12L9 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">Long break after</div>
+                <div class="settings-value">
+                    <span>4</span> Sess
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 18L15 12L9 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal overlay -->
+    <div class="modal-overlay"></div>
+
+    <script>
+        // Main functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const settingsIcon = document.querySelector('.settings-icon');
+            const closeButton = document.querySelector('.close-button');
+            const settingsModal = document.querySelector('.settings-modal');
+            const modalOverlay = document.querySelector('.modal-overlay');
+            const frogIcon = document.querySelector('.frog-icon');
+            const appContainer = document.querySelector('.app-container');
+            const topSection = document.querySelector('.top-section');
+            const middleSection = document.querySelector('.middle-section');
+            const bottomSection = document.querySelector('.bottom-section');
+            let interfaceVisible = true;
+            
+            // Settings modal toggle
+            settingsIcon.addEventListener('click', function() {
+                settingsModal.style.display = 'block';
+                modalOverlay.style.display = 'block';
+            });
+            
+            closeButton.addEventListener('click', function() {
+                settingsModal.style.display = 'none';
+                modalOverlay.style.display = 'none';
+            });
+            
+            modalOverlay.addEventListener('click', function() {
+                settingsModal.style.display = 'none';
+                modalOverlay.style.display = 'none';
+            });
+            
+            // Tab switching
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    // In a real app, you would show/hide the corresponding content here
+                });
+            });
+            
+            // Toggle interface visibility when clicking the frog icon
+            frogIcon.addEventListener('click', function() {
+                interfaceVisible = !interfaceVisible;
+                
+                if (interfaceVisible) {
+                    // Show interface
+                    middleSection.style.opacity = '1';
+                    bottomSection.style.opacity = '1';
+                    appContainer.style.backdropFilter = 'blur(3px)';
+                    appContainer.style.webkitBackdropFilter = 'blur(3px)';
+                    appContainer.style.background = 'rgba(255, 255, 255, 0.1)';
+                    topSection.style.background = 'rgba(255, 255, 255, 0.05)';
+                    topSection.style.backdropFilter = 'blur(5px)';
+                    topSection.style.webkitBackdropFilter = 'blur(5px)';
+                } else {
+                    // Hide interface to reveal background
+                    middleSection.style.opacity = '0';
+                    bottomSection.style.opacity = '0';
+                    appContainer.style.backdropFilter = 'none';
+                    appContainer.style.webkitBackdropFilter = 'none';
+                    appContainer.style.background = 'transparent';
+                    topSection.style.background = 'rgba(0, 0, 0, 0.2)';
+                    topSection.style.backdropFilter = 'none';
+                    topSection.style.webkitBackdropFilter = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
