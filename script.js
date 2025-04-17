@@ -64,7 +64,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add slight blur to background
             document.querySelector('.background').style.filter = 'blur(3px)';
             
-            // Background zoomed element has been removed
+            // Hide animation when interface is visible
+            document.querySelector('.animation-container').style.display = 'none';
         } else {
             // Hide interface completely to reveal background for animations
             document.body.classList.add('hide-overlay');
@@ -82,11 +83,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Remove blur from background
             document.querySelector('.background').style.filter = 'none';
             
-            // Background zoomed element has been removed
+            // Show animation when interface is hidden
+            document.querySelector('.animation-container').style.display = 'block';
         }
     });
     
     // Background zoomed element has been removed
+    
+    // Initialize animation container (hidden by default)
+    document.querySelector('.animation-container').style.display = 'none';
 
     // Generate progress bars
     const progressContainer = document.querySelector('.progress-container');
